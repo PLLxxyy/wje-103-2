@@ -4,13 +4,13 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc",
-    "start": "node dist/src/server.js",
-    "typecheck": "tsc --noEmit",
-    "prisma:validate": "prisma validate",
-    "prisma:generate": "prisma generate",
-    "seed": "prisma db seed"
+    "dev": "node scripts/load-env.cjs tsx watch src/server.ts",
+    "build": "node scripts/load-env.cjs tsc",
+    "start": "node scripts/load-env.cjs node dist/src/server.js",
+    "typecheck": "node scripts/load-env.cjs tsc --noEmit",
+    "prisma:validate": "node scripts/load-env.cjs prisma validate",
+    "prisma:generate": "node scripts/load-env.cjs prisma generate",
+    "seed": "node scripts/load-env.cjs prisma db seed"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
