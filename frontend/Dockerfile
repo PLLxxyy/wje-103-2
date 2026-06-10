@@ -8,6 +8,7 @@ RUN npm install
 COPY tsconfig.json vite.config.ts index.html ./
 COPY src ./src
 
+RUN npm run typecheck
 RUN npm run build
 
 FROM nginx:alpine

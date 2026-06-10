@@ -1,0 +1,22 @@
+{
+  "name": "wje-sweetgroup",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "typecheck": "npm run typecheck:backend && npm run typecheck:frontend",
+    "typecheck:backend": "npm --prefix backend run typecheck",
+    "typecheck:frontend": "npm --prefix frontend run typecheck",
+    "validate:prisma": "npm --prefix backend run prisma:validate",
+    "validate:env": "node scripts/validate-env.js",
+    "verify": "npm run validate:env && npm run validate:prisma && npm run typecheck",
+    "build": "npm run verify && npm run build:backend && npm run build:frontend",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "docker:build": "npm run verify && docker compose build",
+    "docker:up": "npm run verify && docker compose up -d",
+    "docker:deploy": "npm run verify && docker compose up -d --build"
+  }
+}
