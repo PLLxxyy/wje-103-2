@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  member
+  leader
+  admin
+}
+
+enum GroupBuyStatus {
+  recruiting
+  closed
+  delivering
+  completed
+  cancelled
+}
+
+model User {
+  id            String       @id @default(cuid()) @db.VarChar(191)
+  nickname      String       @db.VarChar(80)
+  phone         String       @unique @db.VarChar(30)
+  avatar        String?      @db.VarChar(500)
+  role          UserRole     @default(member)
+  password_hash String       @db.VarChar(120)
+  created_at    DateTime     @default(now())
+  groupBuys     GroupBuy[]   @relation("LeaderGroupBuys")
+  joinRecords   JoinRecord[]
+  voteRecords   VoteRecord[]
+
+  @@map("users")
+}
+
+model Shop {
+  id            String        @id @default(cuid()) @db.VarChar(191)
+  name          String        @db.VarChar(120)
+  description   String        @db.Text
+  address       String        @db.VarChar(255)
+  contact_phone String        @db.VarChar(30)
+  logo          String?       @db.VarChar(500)
+  created_at    DateTime      @default(now())
+  groupBuys     GroupBuy[]
+  dessertItems  DessertItem[]
+
+  @@map("shops")
+}
+
+model DessertItem {
+  id          String   @id @default(cuid()) @db.VarChar(191)
+  shop_id     String   @db.VarChar(191)
+  name        String   @db.VarChar(120)
+  description String   @db.Text
+  price       Decimal  @db.Decimal(10, 2)
+  image       String?  @db.VarChar(500)
+  category    String   @db.VarChar(60)
+  shop        Shop     @relation(fields: [shop_id], references: [id], onDelete: Cascade)
+
+  @@map("dessert_items")
+}
+
+model GroupBuy {
+  id              String           @id @default(cuid()) @db.VarChar(191)
+  title           String           @db.VarChar(160)
+  description     String           @db.Text
+  shop_id         String           @db.VarChar(191)
+  leader_id       String           @db.VarChar(191)
+  original_price  Decimal          @db.Decimal(10, 2)
+  group_price     Decimal          @db.Decimal(10, 2)
+  min_quantity    Int
+  deadline        DateTime
+  status          GroupBuyStatus   @default(recruiting)
+  pickup_notes    String?          @db.Text
+  created_at      DateTime         @default(now())
+  shop            Shop             @relation(fields: [shop_id], references: [id])
+  leader          User             @relation("LeaderGroupBuys", fields: [leader_id], references: [id])
+  joinRecords     JoinRecord[]
+  pickupPoints    PickupPoint[]
+  voteOptions     VoteOption[]
+
+  @@index([shop_id])
+  @@index([leader_id])
+  @@map("group_buys")
+}
+
+model PickupPoint {
+  id             String       @id @default(cuid()) @db.VarChar(191)
+  group_buy_id   String       @db.VarChar(191)
+  address        String       @db.VarChar(255)
+  available_time String       @db.VarChar(120)
+  max_capacity   Int
+  groupBuy       GroupBuy     @relation(fields: [group_buy_id], references: [id], onDelete: Cascade)
+  joinRecords    JoinRecord[]
+
+  @@index([group_buy_id])
+  @@map("pickup_points")
+}
+
+model JoinRecord {
+  id              String      @id @default(cuid()) @db.VarChar(191)
+  group_buy_id    String      @db.VarChar(191)
+  user_id         String      @db.VarChar(191)
+  flavor          String      @db.VarChar(120)
+  quantity        Int
+  pickup_point_id String      @db.VarChar(191)
+  picked_up       Boolean     @default(false)
+  joined_at       DateTime    @default(now())
+  groupBuy        GroupBuy    @relation(fields: [group_buy_id], references: [id], onDelete: Cascade)
+  user            User        @relation(fields: [user_id], references: [id])
+  pickupPoint     PickupPoint @relation(fields: [pickup_point_id], references: [id])
+
+  @@index([group_buy_id])
+  @@index([user_id])
+  @@index([pickup_point_id])
+  @@map("join_records")
+}
+
+model VoteOption {
+  id            String       @id @default(cuid()) @db.VarChar(191)
+  group_buy_id  String       @db.VarChar(191)
+  option_text   String       @db.VarChar(120)
+  groupBuy      GroupBuy     @relation(fields: [group_buy_id], references: [id], onDelete: Cascade)
+  voteRecords   VoteRecord[]
+
+  @@index([group_buy_id])
+  @@map("vote_options")
+}
+
+model VoteRecord {
+  id             String     @id @default(cuid()) @db.VarChar(191)
+  vote_option_id String     @db.VarChar(191)
+  user_id        String     @db.VarChar(191)
+  voteOption     VoteOption @relation(fields: [vote_option_id], references: [id], onDelete: Cascade)
+  user           User       @relation(fields: [user_id], references: [id])
+
+  @@unique([vote_option_id, user_id])
+  @@index([user_id])
+  @@map("vote_records")
+}
