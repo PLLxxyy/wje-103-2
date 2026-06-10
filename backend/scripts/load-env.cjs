@@ -2,8 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 
-const backendDir = __dirname;
-const rootDir = path.resolve(backendDir, '..');
+const scriptDir = __dirname;
+const backendDir = path.resolve(scriptDir, '..');
+const rootDir = path.resolve(scriptDir, '../..');
 
 function loadEnvFrom(dir) {
   const envPath = path.join(dir, '.env');

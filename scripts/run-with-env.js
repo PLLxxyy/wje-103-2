@@ -35,20 +35,38 @@ function ensureDerivedVars() {
   }
 }
 
+function parseArgs(argv) {
+  let cwd = null;
+  const rest = [];
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--cwd' && i + 1 < argv.length) {
+      cwd = argv[i + 1];
+      i++;
+    } else {
+      rest.push(argv[i]);
+    }
+  }
+  return { cwd, rest };
+}
+
 function main() {
   const args = process.argv.slice(2);
-  if (args.length === 0) {
-    console.error('Usage: node run-with-env.js <command> [args...]');
+  const { cwd, rest } = parseArgs(args);
+
+  if (rest.length === 0) {
+    console.error('Usage: node run-with-env.js [--cwd <dir>] <command> [args...]');
     process.exit(1);
   }
 
   loadEnv();
   ensureDerivedVars();
 
-  const [cmd, ...cmdArgs] = args;
+  const [cmd, ...cmdArgs] = rest;
+  const childCwd = cwd ? path.resolve(rootDir, cwd) : undefined;
   const child = spawn(cmd, cmdArgs, {
     stdio: 'inherit',
     env: process.env,
+    cwd: childCwd,
     shell: process.platform === 'win32'
   });
 
