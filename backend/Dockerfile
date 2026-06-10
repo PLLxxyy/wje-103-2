@@ -8,12 +8,16 @@ COPY package*.json ./
 RUN npm install
 
 COPY prisma ./prisma
+COPY scripts ./scripts
 COPY tsconfig.json ./
 COPY src ./src
 
-RUN npx prisma validate
+ARG DATABASE_URL=mysql://placeholder:placeholder@localhost:3306/placeholder
+ENV DATABASE_URL=${DATABASE_URL}
+
+RUN npm run prisma:validate
 RUN npm run typecheck
-RUN npx prisma generate
+RUN npm run prisma:generate
 RUN npm run build
 
 EXPOSE 3000
